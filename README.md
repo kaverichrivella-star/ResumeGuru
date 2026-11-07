@@ -16,9 +16,9 @@ If PowerShell blocks activation, run `Set-ExecutionPolicy -Scope Process -Execut
 
 ## 2. Get a Gemini API key
 
-Create an API key in Google AI Studio. Start the app and paste the key into the password field in the sidebar. The key is not stored in this project.
+Create one Gemini API key in Google AI Studio. You do not need to create a new key each time you use the app. Paste it into the password field in the sidebar and click **Save key on this device**. ResumeGuru stores it locally in `.streamlit/secrets.toml` and loads it the next time you open the app. That secrets file is ignored by Git and must never be committed or shared.
 
-Alternatively, set `GEMINI_API_KEY` in your environment before starting the app.
+Alternatively, set `GEMINI_API_KEY` in your environment before starting the app. If a key has been exposed in a chat, screenshot, or public repository, revoke it in Google Cloud and save a new key locally.
 
 ## 3. Start the app
 

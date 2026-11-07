@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+from pathlib import Path
 
 import fitz
 import streamlit as st
@@ -10,6 +11,7 @@ from google.genai import types
 
 MODEL_NAME = "gemini-3.8-flash"
 MAX_RESUME_CHARS = 30_000
+SECRETS_FILE = Path(__file__).resolve().parent / ".streamlit" / "secrets.toml"
 INTERVIEW_MODES = {
     "Technical": "Ask about the candidate's projects and technical skills. Start with a project.",
     "HR": "Ask behavioral and experience-based questions grounded in the resume.",
@@ -143,12 +145,30 @@ if "resume_hash" not in st.session_state:
 
 with st.sidebar:
     st.header("Interview setup")
+    saved_api_key = os.getenv("GEMINI_API_KEY", "")
+    if SECRETS_FILE.is_file():
+        saved_api_key = st.secrets.get("GEMINI_API_KEY", saved_api_key)
+
     api_key_input = st.text_input(
         "Gemini API key",
-        value=os.getenv("GEMINI_API_KEY", ""),
+        value=saved_api_key,
         type="password",
         help="Used only for Gemini requests from this app session. Do not share your key.",
+        key="gemini_api_key_input",
     )
+    st.caption("Create your Gemini key once, then save it here for future app sessions.")
+    if st.button(
+        "Save key on this device",
+        disabled=not st.session_state.gemini_api_key_input.strip(),
+        help="Stores the key in the ignored .streamlit/secrets.toml file on this computer.",
+    ):
+        SECRETS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        SECRETS_FILE.write_text(
+            f"GEMINI_API_KEY = {json.dumps(st.session_state.gemini_api_key_input.strip())}\n",
+            encoding="utf-8",
+        )
+        st.success("API key saved locally. It will be loaded next time you open the app.")
+
     interview_mode = st.selectbox("Mode", list(INTERVIEW_MODES))
     difficulty = st.selectbox("Difficulty", ["Easy", "Medium", "Hard"], index=1)
 
